@@ -1,4 +1,3 @@
-#from ble_central import BLE_Central
 import asyncio
 import time
 
@@ -13,7 +12,6 @@ async def task2():
         print("t2")
 
 async def main_task():
-    #conn = BLE_Central()
     tasks = [
         asyncio.create_task(task1()),
         asyncio.create_task(task2())
