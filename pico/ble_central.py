@@ -46,7 +46,7 @@ class BLE_Central:
     async def characteristic_listener(self, characteristic, callback):
         try:
             while True:
-                data = await characteristic.written()
+                data = (await characteristic.written())[1].decode('utf-8')
                 callback(data)
         except Exception as e:
             print(f"Error while listening to a characteristic: {e}")
