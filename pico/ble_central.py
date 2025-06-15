@@ -20,19 +20,21 @@ class BLE_Central:
             write=True,
             notify=True,
         )
-        aioble.Descriptor(
+        self.controls_descriptor = aioble.Descriptor(
             self.controls_characteristic,
             bluetooth.UUID(0x2901),  # Characteristic User Description
-            value="Controller data".encode("utf-8")
+            read=True
         )
         aioble.register_services(self.controls_service)
+        self.controls_descriptor.write("Controller data".encode('utf-8'))
+
 
     async def connection_task(self):
         _ADV_INTERVAL_US = 500_000
         while True:
             try:
                 print("Advertising and waiting for central...")
-                self.connection = await aioble.advertise(_ADV_INTERVAL_US, name="PicoCar", services=[self.CONTROLS_SERVICE_UUID]) # type: ignore
+                self.connection = await aioble.advertise(_ADV_INTERVAL_US, name=self.name, services=[self.CONTROLS_SERVICE_UUID]) # type: ignore
                 self.connected = True
                 print("Connected:", self.connection.device)
 
