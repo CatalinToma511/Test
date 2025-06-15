@@ -3,7 +3,6 @@ import bluetooth
 import machine
 import utime
 import asyncio
-from typing import Any
 
 
 class BLE_Central:
@@ -31,13 +30,16 @@ class BLE_Central:
     async def connection_task(self):
         _ADV_INTERVAL_US = 500_000
         while True:
-            print("Advertising and waiting for central...")
-            self.connection = await aioble.advertise(_ADV_INTERVAL_US, name="PicoCar", services=[self.CONTROLS_SERVICE_UUID]) # type: ignore
-            self.connected = True
-            print("Connected:", self.connection.device)
+            try:
+                print("Advertising and waiting for central...")
+                self.connection = await aioble.advertise(_ADV_INTERVAL_US, name="PicoCar", services=[self.CONTROLS_SERVICE_UUID]) # type: ignore
+                self.connected = True
+                print("Connected:", self.connection.device)
 
-            await self.connection.disconnected(timeout_ms = None)
-            print("Disconnected")
+                await self.connection.disconnected(timeout_ms = None)
+                print("Disconnected")
+            except Exception as e:
+                print(f"Error while establishing connection: {e}")
 
     async def characteristic_listener(self, characteristic, callback):
         try:
