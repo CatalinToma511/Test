@@ -1,20 +1,15 @@
 import asyncio
 import time
+from ble_central import BLE_Central
 
-async def task1():
-    while True:
-        time.sleep(4)
-        print("t1")
-
-async def task2():
-    while True:
-        time.sleep(2)
-        print("t2")
+def controls_callback():
+    pass
 
 async def main_task():
+    ble = BLE_Central("PicoW_BLE")
     tasks = [
-        asyncio.create_task(task1()),
-        asyncio.create_task(task2())
+        asyncio.create_task(ble.characteristic_listener(ble.controls_characteristic, controls_callback)),
+        asyncio.create_task(ble.connection_task())
     ]
     await asyncio.gather(*tasks)
 

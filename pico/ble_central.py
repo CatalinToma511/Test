@@ -1,0 +1,48 @@
+import aioble
+import bluetooth
+import machine
+import utime
+import asyncio
+from typing import Any
+
+
+class BLE_Central:
+    def __init__(self, name="PicoW_Car"):
+        self.name = name
+        self.connection = None
+        self.connected = False
+        self.CONTROLS_SERVICE_UUID = bluetooth.UUID("12345678-1234-5678-1234-56789abcdef0")
+        self.CONTROLS_CHARACTERISTIC_UUID = bluetooth.UUID("12345678-1234-5678-1234-56789abcdef1")
+        self.controls_service =  aioble.Service(self.CONTROLS_SERVICE_UUID)
+        self.controls_characteristic = aioble.Characteristic(
+            self.controls_service,
+            self.CONTROLS_CHARACTERISTIC_UUID,
+            read=True,
+            write=True,
+            notify=True,
+        )
+        aioble.Descriptor(
+            self.controls_characteristic,
+            bluetooth.UUID(0x2901),  # Characteristic User Description
+            value="Controller data".encode("utf-8")
+        )
+        aioble.register_services(self.controls_service)
+
+    async def connection_task(self):
+        _ADV_INTERVAL_US = 500_000
+        while True:
+            print("Advertising and waiting for central...")
+            self.connection = await aioble.advertise(_ADV_INTERVAL_US, name="PicoCar", services=[self.CONTROLS_SERVICE_UUID]) # type: ignore
+            self.connected = True
+            print("Connected:", self.connection.device)
+
+            await self.connection.disconnected(timeout_ms = None)
+            print("Disconnected")
+
+    async def characteristic_listener(self, characteristic, callback):
+        try:
+            while True:
+                data = await characteristic.written()
+                callback(data)
+        except Exception as e:
+            print(f"Error while listening to a characteristic: {e}")
